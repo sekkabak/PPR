@@ -56,7 +56,7 @@ int main(void)
 	{
 		// sprawdzamy, czy udalo sie nawiazac polaczenie
 		if (newfd < 0)
-		{ // jesli wystapil blad, to wyswietlamy o nim informacje
+		{
 			perror("accept()");
 		}
 		else
@@ -67,15 +67,32 @@ int main(void)
 			pid_t pid = fork();
 			if (pid == 0)
 			{
-				// pobranie pid
-				pid = getpid();
-				char name[8];
-				snprintf(name, sizeof(name), "%d", pid);
-
 				// odczytujemy wiadomosc
 				n = read(newfd, buffer, 255);
 				if (n < 0)
 					return error(4, "read()");
+				
+				// przepisanie początka buffera jako nazwa procesu
+				char name[8];
+				int i = 0;
+				char newBuffer[256];
+				while (buffer[i] != '\n')
+				{
+					name[i] = buffer[i];
+					i++;
+				}
+				name[i] = '\0';
+				i++;
+
+				// przepisanie reszty bufora do newBuffer
+				int ii = 0;
+				while (buffer[i] != '\0')
+				{
+					newBuffer[ii] = buffer[i];
+					ii++;
+					i++;
+				}
+				newBuffer[ii] = '\0';
 
 				// zapis do pliku
 				FILE *f = fopen(name, "w");
@@ -85,12 +102,12 @@ int main(void)
 					exit(1);
 				}
 
-				fprintf(f, "Wiadomosc od klienta to: %s\n", buffer);
+				fprintf(f, "Wiadomosc od klienta to: %s\n", newBuffer);
 				fprintf(f, "Wiadomosc w hexa: ");
-				int i = 0;
-				while (buffer[i] != '\0')
+				i = 0;
+				while (newBuffer[i] != '\0')
 				{
-					fprintf(f, "%2x ", buffer[i]);
+					fprintf(f, "%02X ", newBuffer[i]);
 					i++;
 				}
 				fprintf(f, "\n");

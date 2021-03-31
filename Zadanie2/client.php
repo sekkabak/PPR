@@ -13,7 +13,9 @@
 		exit( 1 );
 	}
 		
+	$pid = getmypid();
 	$mssg = readline('Podaj ciąg do przekazania: ');
+	$mssg = $pid . "\n" . $mssg;
 	socket_write($client, $mssg, strlen($mssg));
 	
 	socket_close( $client );
